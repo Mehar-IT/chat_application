@@ -1,0 +1,20 @@
+const mongoose = require("mongoose");
+
+const userModel = mongoose.Schema(
+  {
+    name: { type: String, require: true },
+    email: { type: String, require: true },
+    password: { type: String, require: true },
+    avatar: {
+      type: String,
+      require: true,
+      default:
+        "https://res.cloudinary.com/learn2code/image/upload/v1663160482/aqgztfqitit4okoxmrug.png",
+    },
+  },
+  {
+    timestamp: true,
+  }
+);
+
+module.exports.User = mongoose.model("User", userModel);
