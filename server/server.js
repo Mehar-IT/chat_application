@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const chats = require("./data/dummyData");
 
 dotenv.config();
 const app = express();
@@ -9,6 +10,24 @@ app.get("/", (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "app is running",
+  });
+});
+
+app.get("/api/chats", (req, res, next) => {
+  res.status(200).json({
+    success: true,
+    chats,
+  });
+});
+
+app.get("/api/chats/:chatId", (req, res, next) => {
+  const id = req.params.chatId;
+
+  const chatData = chats.find((e) => e._id === id);
+
+  res.status(200).json({
+    success: true,
+    chatData,
   });
 });
 
