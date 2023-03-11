@@ -1,6 +1,6 @@
 const User = require("../models/UserModel");
 const asyncHandler = require("express-async-handler");
-const jwtToken = require("../utils/jwtToken");
+const sendToken = require("../utils/jwtToken");
 
 module.exports.registerUser = asyncHandler(async (req, res, next) => {
   const { name, email, password, avatar } = req.body;
@@ -15,14 +15,15 @@ module.exports.registerUser = asyncHandler(async (req, res, next) => {
         "https://res.cloudinary.com/learn2code/image/upload/v1663160482/aqgztfqitit4okoxmrug.png",
     },
   });
-  jwtToken(user, 201, res);
+  sendToken(user, 201, res);
 });
 
 module.exports.loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    const error = new Error("Invalid email and password", 401);
+    const error = new Error("Invalid email and password");
+    error.status = 401;
     return next(error);
   }
   const isPasswordMatch = await user.comparePassowrd(password);
@@ -32,5 +33,5 @@ module.exports.loginUser = asyncHandler(async (req, res, next) => {
     error.status = 401;
     return next(error);
   }
-  jwtToken(user, 201, res);
+  sendToken(user, 201, res);
 });

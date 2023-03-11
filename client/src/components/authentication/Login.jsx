@@ -1,22 +1,48 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import "./signUpForm.css";
+import { loginUser, reset } from "../../context/userAction";
+import { UserContext } from "../../context/UserContextProvider";
+import { Spinner } from "@chakra-ui/spinner";
+import { useToast } from "@chakra-ui/toast";
+import { useNavigate } from "react-router-dom";
 
-export default function SignUp() {
-  const [user, setUser] = useState({
+export default function Login() {
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const { email, password } = user;
+  const { email, password } = formData;
+  const { user: users, dispatch } = useContext(UserContext);
+  const { error, loading, isAuthenticated, user } = users;
 
   const handleChange = (e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(user);
+    loginUser(dispatch, formData);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/chats");
+    }
+    if (error) {
+      toast({
+        description: error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      reset(dispatch);
+    }
+  }, [error, isAuthenticated]);
+
   return (
     <div spacing={"5px"}>
       <form className="signUpForm" onSubmit={handleSubmit}>
@@ -44,8 +70,8 @@ export default function SignUp() {
           value={password}
           required
         />
-        <button type="submit" className="loginBTN">
-          Login
+        <button disabled={loading} className="loginBTN" type="submit">
+          {loading ? <Spinner /> : "Login"}
         </button>
       </form>
     </div>

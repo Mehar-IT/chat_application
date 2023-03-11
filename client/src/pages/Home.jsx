@@ -36,7 +36,7 @@ export default function Home() {
         borderRadius="lg"
         borderWidth={"1px"}
       >
-        <Tabs variant="soft-rounded" colorScheme="green">
+        <Tabs variant="soft-rounded" colorScheme="green" isLazy>
           <TabList>
             <Tab width={"50%"}>Login</Tab>
             <Tab width={"50%"}>Sign Up</Tab>

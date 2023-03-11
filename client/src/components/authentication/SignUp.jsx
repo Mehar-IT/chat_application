@@ -1,17 +1,26 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
+import { useToast } from "@chakra-ui/toast";
 import "./signUpForm.css";
+import { UserContext } from "../../context/UserContextProvider";
+import { registerUser, reset } from "../../context/userAction";
+import { Spinner } from "@chakra-ui/spinner";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
-  const [user, setUser] = useState({
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     avatar: "",
   });
-  const { name, email, password, confirmPassword } = user;
+  const { name, email, password, confirmPassword } = formData;
   const [avatarPreview, setavatarPreview] = useState("/avatar.png");
+  const { user: users, dispatch } = useContext(UserContext);
+  const { error, loading, isAuthenticated, user } = users;
 
   const handleChange = (e) => {
     if (e.target.name === "avatar") {
@@ -20,18 +29,46 @@ export default function SignUp() {
       reader.onload = () => {
         if (reader.readyState === 2) {
           setavatarPreview(reader.result);
-          setUser({ ...user, [e.target.name]: reader.result });
+          setFormData({ ...formData, [e.target.name]: reader.result });
         }
       };
     } else {
-      setUser({ ...user, [e.target.name]: e.target.value });
+      setFormData({ ...formData, [e.target.name]: e.target.value });
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(user);
+
+    if (password !== confirmPassword) {
+      toast({
+        description: "password must be matched",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      return;
+    }
+    registerUser(dispatch, formData);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/chats");
+    }
+    if (error) {
+      toast({
+        description: error,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+      reset(dispatch);
+    }
+  }, [error, isAuthenticated]);
+
   return (
     <div spacing={"5px"}>
       <form className="signUpForm" onSubmit={handleSubmit}>
@@ -95,7 +132,9 @@ export default function SignUp() {
             // required
           />
         </div>
-        <button type="submit">Register</button>
+        <button disabled={loading} type="submit">
+          {loading ? <Spinner /> : "Register"}
+        </button>
       </form>
     </div>
   );
