@@ -92,7 +92,7 @@ export default function SignUp() {
             accept="image/jpg,image/jpeg,image/png"
             name="avatar"
             onChange={handleChange}
-            required
+            // required
           />
         </div>
         <button type="submit">Register</button>

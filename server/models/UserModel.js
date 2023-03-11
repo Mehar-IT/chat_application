@@ -1,15 +1,27 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
+const JWT = require("jsonwebtoken");
+const bcryptjs = require("bcryptjs");
 
-const userModel = mongoose.Schema(
+const userSchema = mongoose.Schema(
   {
     name: { type: String, require: true },
-    email: { type: String, require: true },
-    password: { type: String, require: true },
-    avatar: {
+    email: {
       type: String,
       require: true,
-      default:
-        "https://res.cloudinary.com/learn2code/image/upload/v1663160482/aqgztfqitit4okoxmrug.png",
+      unique: true,
+      validate: [validator.isEmail, "please enter a valid email"],
+    },
+    password: { type: String, require: true },
+    avatar: {
+      public_id: {
+        type: String,
+        require: true,
+      },
+      image_url: {
+        type: String,
+        require: true,
+      },
     },
   },
   {
@@ -17,4 +29,21 @@ const userModel = mongoose.Schema(
   }
 );
 
-module.exports.User = mongoose.model("User", userModel);
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+  this.password = await bcryptjs.hash(this.password, 10);
+});
+
+userSchema.methods.getJwtToken = function () {
+  return JWT.sign({ id: this._id }, process.env.JWT_KEY, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+};
+
+userSchema.methods.comparePassowrd = function (password) {
+  return bcryptjs.compare(password, this.password);
+};
+
+module.exports = mongoose.model("User", userSchema);
