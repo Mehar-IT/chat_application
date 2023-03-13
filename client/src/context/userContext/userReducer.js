@@ -7,6 +7,9 @@ import {
   LOGIN_FAILED,
   LOGOUT_SUCCESS,
   LOGOUT_FAILED,
+  SEARCH_CHAT_START,
+  SEARCH_CHAT_SUCCESS,
+  SEARCH_CHAT_FAILED,
   RESET,
 } from "./userConstant";
 
@@ -47,6 +50,40 @@ export const userReducer = (state, action) => {
     case RESET:
       return {
         ...state,
+        loading: false,
+        error: null,
+      };
+    default:
+      return state;
+  }
+};
+
+export const usersReducer = (state, action) => {
+  switch (action.type) {
+    case SEARCH_CHAT_START:
+      return {
+        loading: true,
+      };
+
+    case SEARCH_CHAT_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        users: action.payload.user,
+      };
+
+    case SEARCH_CHAT_FAILED:
+      return {
+        ...state,
+        loading: false,
+        users: null,
+        error: action.payload,
+      };
+
+    case RESET:
+      return {
+        ...state,
+        users: null,
         loading: false,
         error: null,
       };

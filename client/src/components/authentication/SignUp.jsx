@@ -2,8 +2,8 @@ import React from "react";
 import { useState, useContext, useEffect } from "react";
 import { useToast } from "@chakra-ui/toast";
 import "./signUpForm.css";
-import { UserContext } from "../../context/UserContextProvider";
-import { registerUser, reset } from "../../context/userAction";
+import { UserContext } from "../../context/userContext/UserContextProvider";
+import { registerUser, reset } from "../../context/userContext/userAction";
 import { Spinner } from "@chakra-ui/spinner";
 import { useNavigate } from "react-router-dom";
 

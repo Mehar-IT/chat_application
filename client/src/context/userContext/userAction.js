@@ -1,4 +1,4 @@
-import axios from "../utils/httpRequest";
+import axios from "../../utils/httpRequest";
 import {
   REGISTER_FAILED,
   REGISTER_START,
@@ -8,6 +8,9 @@ import {
   LOGIN_FAILED,
   LOGOUT_SUCCESS,
   LOGOUT_FAILED,
+  SEARCH_CHAT_START,
+  SEARCH_CHAT_SUCCESS,
+  SEARCH_CHAT_FAILED,
   RESET,
 } from "./userConstant";
 
@@ -59,4 +62,22 @@ export const logoutUser = async (dispatch) => {
 
 export const reset = async (dispatch) => {
   dispatch({ type: RESET });
+};
+
+export const searchChat = async (dispatch, search) => {
+  try {
+    dispatch({ type: SEARCH_CHAT_START });
+
+    const { data } = await axios.get(`/user/allUsers?search=${search}`);
+
+    dispatch({
+      type: SEARCH_CHAT_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: SEARCH_CHAT_FAILED,
+      payload: error.response.data.message,
+    });
+  }
 };

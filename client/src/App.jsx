@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ChatPage from "./pages/ChatPage";
 import Home from "./pages/Home";
 import ProtectedRoute from "./ProtectedRoute";
-import { UserContext } from "./context/UserContextProvider";
+import { UserContext } from "./context/userContext/UserContextProvider";
 import { useContext } from "react";
 
 function App() {
