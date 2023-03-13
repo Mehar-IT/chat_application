@@ -2,7 +2,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const userRoute = require("./routes/userRoute");
-const { notFoundError, errotHandler } = require("./utils/error");
+const chatRoute = require("./routes/chatRoute");
+const { notFoundError, errotHandler } = require("./middleware/error");
+const cookieParser = require("cookie-parser");
 
 process.on("uncaughtException", (err) => {
   console.log(`Error : ${err.message}`);
@@ -16,6 +18,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/", (req, res, next) => {
   res.status(200).json({
@@ -25,6 +28,7 @@ app.get("/", (req, res, next) => {
 });
 
 app.use("/api/user", userRoute);
+app.use("/api/chats", chatRoute);
 
 app.use(notFoundError);
 app.use(errotHandler);

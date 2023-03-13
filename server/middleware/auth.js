@@ -1,6 +1,6 @@
 const asyncErrorHandler = require("express-async-handler");
 const JWT = require("jsonwebtoken");
-const User = require("../models/userModel");
+const User = require("../models/UserModel");
 
 exports.isAuthenticated = asyncErrorHandler(async (req, res, next) => {
   const { token } = req.cookies;
