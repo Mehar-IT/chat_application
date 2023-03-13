@@ -1,3 +1,9 @@
-export const CHAT_START = "CHAT_START";
-export const CHAT_SUCCESS = "CHAT_SUCCESS";
-export const CHAT_FAILED = "CHAT_FAILED";
+export const CREATE_CHAT_START = "CREATE_CHAT_START";
+export const CREATE_CHAT_SUCCESS = "CREATE_CHAT_SUCCESS";
+export const CREATE_CHAT_FAILED = "CREATE_CHAT_FAILED";
+
+export const GET_CHAT_START = "GET_CHAT_START";
+export const GET_CHAT_SUCCESS = "GET_CHAT_SUCCESS";
+export const GET_CHAT_FAILED = "GET_CHAT_FAILED";
+
+export const RESET = "RESET";

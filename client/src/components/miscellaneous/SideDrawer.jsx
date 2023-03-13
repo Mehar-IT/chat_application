@@ -17,14 +17,17 @@ import {
   DrawerBody,
   Input,
   useDisclosure,
+  Spinner,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, BellIcon } from "@chakra-ui/icons";
-import { UserContext } from "../../context/userContext/UserContextProvider";
 import {
   logoutUser,
   reset,
   searchChat,
 } from "../../context/userContext/userAction";
+import { createUserChat } from "../../context/chatContext/chatAction";
+import { UserContext } from "../../context/userContext/UserContextProvider";
+import { ChatContext } from "../../context/chatContext/chatContextProvider";
 import ProfileModel from "./ProfileModel";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserAvatar/UserListItem";
@@ -36,8 +39,15 @@ export default function SideDrawer() {
     usersDispatch,
     dispatch,
   } = useContext(UserContext);
+  const { chats, dispatch: chatDispatch } = useContext(ChatContext);
+  const { loading: chatLoading, chat, error: chatError } = chats;
   const { error, loading, isAuthenticated, user } = userData;
-  const { users: allUser, error: searchError, loading: searchLoading } = users;
+  const {
+    users: searchResult,
+    error: searchError,
+    loading: searchLoading,
+  } = users;
+
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [search, setSearch] = useState("");
@@ -56,7 +66,10 @@ export default function SideDrawer() {
     searchChat(usersDispatch, search);
   };
 
-  const accessChat = (id) => {};
+  const accessChat = (id) => {
+    createUserChat(chatDispatch, id);
+    onClose();
+  };
 
   useEffect(() => {
     if (error) {
@@ -75,11 +88,21 @@ export default function SideDrawer() {
         status: "error",
         duration: 5000,
         isClosable: true,
-        position: "top",
+        position: "top-left",
       });
       reset(usersDispatch);
     }
-  }, [error, searchError]);
+    if (chatError) {
+      toast({
+        description: chatError,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-left",
+      });
+      reset(usersDispatch);
+    }
+  }, [error, searchError, chatError]);
 
   return (
     <>
@@ -149,7 +172,7 @@ export default function SideDrawer() {
             {searchLoading ? (
               <ChatLoading />
             ) : (
-              allUser?.map((user) => (
+              searchResult?.map((user) => (
                 <UserListItem
                   key={user._id}
                   user={user}
@@ -157,7 +180,7 @@ export default function SideDrawer() {
                 />
               ))
             )}
-            {/* {loadingChat && <Spinner ml="auto" display="flex" />} */}
+            {chatLoading && <Spinner ml="auto" display="flex" />}
           </DrawerBody>
         </DrawerContent>
       </Drawer>
