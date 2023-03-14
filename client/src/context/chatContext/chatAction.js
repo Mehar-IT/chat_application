@@ -6,6 +6,10 @@ import {
   GET_CHAT_FAILED,
   GET_CHAT_START,
   GET_CHAT_SUCCESS,
+  CREATE_GROUP_START,
+  CREATE_GROUP_SUCCESS,
+  CREATE_GROUP_FAILED,
+  RESET,
 } from "./chatConstant";
 
 export const createUserChat = async (dispatch, userId) => {
@@ -42,4 +46,25 @@ export const getUserChat = async (dispatch) => {
       payload: error.response.data.message,
     });
   }
+};
+export const createGroupChat = async (dispatch, chatData) => {
+  try {
+    dispatch({ type: CREATE_GROUP_START });
+
+    const { data } = await axios.post("/chats/group", chatData);
+
+    dispatch({
+      type: CREATE_GROUP_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: CREATE_GROUP_FAILED,
+      payload: error.response.data.message,
+    });
+  }
+};
+
+export const reset = async (dispatch) => {
+  dispatch({ type: RESET });
 };

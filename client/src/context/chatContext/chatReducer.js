@@ -5,6 +5,9 @@ import {
   GET_CHAT_FAILED,
   GET_CHAT_START,
   GET_CHAT_SUCCESS,
+  CREATE_GROUP_START,
+  CREATE_GROUP_SUCCESS,
+  CREATE_GROUP_FAILED,
   RESET,
 } from "./chatConstant";
 
@@ -59,6 +62,37 @@ export const getChatReducer = (state, action) => {
       return {
         ...state,
         loading: false,
+        error: null,
+      };
+    default:
+      return state;
+  }
+};
+
+export const crateGroupReducer = (state, action) => {
+  switch (action.type) {
+    case CREATE_GROUP_START:
+      return {
+        loading: true,
+      };
+    case CREATE_GROUP_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        group: action.payload,
+        groupCreated: true,
+      };
+    case CREATE_GROUP_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    case RESET:
+      return {
+        ...state,
+        loading: false,
+        groupCreated: false,
         error: null,
       };
     default:

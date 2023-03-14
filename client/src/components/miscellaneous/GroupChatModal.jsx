@@ -13,11 +13,15 @@ import {
   useToast,
   Box,
 } from "@chakra-ui/react";
-import axios from "axios";
 import { useState, useContext } from "react";
 import { ChatContext } from "../../context/chatContext/chatContextProvider";
 import { UserContext } from "../../context/userContext/UserContextProvider";
 import { searchChat } from "../../context/userContext/userAction";
+import {
+  createGroupChat,
+  getUserChat,
+  reset,
+} from "../../context/chatContext/chatAction";
 import UserBadgeItem from "../UserAvatar/UserBadgeItem";
 import UserListItem from "../UserAvatar/UserListItem";
 import { useEffect } from "react";
@@ -27,15 +31,24 @@ const GroupChatModal = ({ children }) => {
   const [groupChatName, setGroupChatName] = useState();
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [search, setSearch] = useState("");
-  const [searchResult, setSearchResult] = useState([]);
+  // const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
 
-  const { user: userData, users, usersDispatch } = useContext(UserContext);
-  const { user } = userData;
+  const { users, usersDispatch } = useContext(UserContext);
+  // const { user } = userData;
   const { users: searcheduser, error } = users;
 
-  //   const { chat, chats } = useContext(ChatContext);
+  const {
+    chat,
+    chats: allChats,
+    dispatch,
+    getChatDispatch,
+    crateGroupDispatch,
+    createGroup,
+  } = useContext(ChatContext);
+  const { chats, error: chatError } = allChats;
+  const { group, error: groupErros, groupCreated } = createGroup;
 
   const handleGroup = (userToAdd) => {
     if (selectedUsers.includes(userToAdd)) {
@@ -60,28 +73,6 @@ const GroupChatModal = ({ children }) => {
     setLoading(true);
     searchChat(usersDispatch, search);
     setLoading(false);
-    // try {
-    //   setLoading(true);
-
-    //   const config = {
-    //     headers: {
-    //       Authorization: `Bearer ${user.token}`,
-    //     },
-    //   };
-    //   const { data } = await axios.get(`/api/user?search=${search}`, config);
-    //   console.log(data);
-    //   setLoading(false);
-    //   setSearchResult(data);
-    // } catch (error) {
-    //   toast({
-    //     title: "Error Occured!",
-    //     description: "Failed to Load the Search Results",
-    //     status: "error",
-    //     duration: 5000,
-    //     isClosable: true,
-    //     position: "bottom-left",
-    //   });
-    // }
   };
 
   const handleDelete = (delUser) => {
@@ -99,22 +90,19 @@ const GroupChatModal = ({ children }) => {
       });
       return;
     }
+    const data = JSON.stringify({
+      name: groupChatName,
+      users: JSON.stringify(selectedUsers.map((u) => u._id)),
+    });
+    createGroupChat(crateGroupDispatch, data);
+  };
 
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      const { data } = await axios.post(
-        `/api/chat/group`,
-        {
-          name: groupChatName,
-          users: JSON.stringify(selectedUsers.map((u) => u._id)),
-        },
-        config
-      );
-      setChats([data, ...chats]);
+  useEffect(() => {
+    getUserChat(getChatDispatch);
+  }, [crateGroupDispatch, group]);
+
+  useEffect(() => {
+    if (groupCreated) {
       onClose();
       toast({
         title: "New Group Chat Created!",
@@ -123,30 +111,44 @@ const GroupChatModal = ({ children }) => {
         isClosable: true,
         position: "bottom",
       });
-    } catch (error) {
-      toast({
-        title: "Failed to Create the Chat!",
-        description: error.response.data,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom",
-      });
+      onClose();
+      reset(crateGroupDispatch);
     }
-  };
-
-  useEffect(() => {
     if (error) {
       toast({
         title: "Error Occured!",
-        description: "Failed to Load the Search Results",
+        description: error,
         status: "error",
         duration: 5000,
         isClosable: true,
         position: "bottom-left",
       });
+      reset(usersDispatch);
     }
-  }, [error]);
+    if (groupErros) {
+      toast({
+        title: "Error Occured!",
+        description: groupErros,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      reset(crateGroupDispatch);
+    }
+    if (chatError) {
+      toast({
+        title: "Error Occured!",
+        description: chatError,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left",
+      });
+
+      reset(getChatDispatch);
+    }
+  }, [error, groupErros, chatError, groupCreated]);
 
   return (
     <>
