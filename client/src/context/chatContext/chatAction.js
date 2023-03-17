@@ -12,6 +12,12 @@ import {
   RENAME_GROUP_START,
   RENAME_GROUP_SUCCESS,
   RENAME_GROUP_FAILED,
+  ADD_GROUP_START,
+  ADD_GROUP_SUCCESS,
+  ADD_GROUP_FAILED,
+  REMOVE_GROUP_START,
+  REMOVE_GROUP_SUCCESS,
+  REMOVE_GROUP_FAILED,
   RESET,
 } from "./chatConstant";
 
@@ -69,6 +75,24 @@ export const createGroupChat = async (dispatch, chatData) => {
   }
 };
 
+export const addGroupChat = async (dispatch, chatData) => {
+  try {
+    dispatch({ type: ADD_GROUP_START });
+
+    const { data } = await axios.put("/chats/groupadd", chatData);
+
+    dispatch({
+      type: ADD_GROUP_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: ADD_GROUP_FAILED,
+      payload: error.response.data.message,
+    });
+  }
+};
+
 export const renameGroupChat = async (dispatch, chatData) => {
   try {
     dispatch({ type: RENAME_GROUP_START });
@@ -82,6 +106,24 @@ export const renameGroupChat = async (dispatch, chatData) => {
   } catch (error) {
     dispatch({
       type: RENAME_GROUP_FAILED,
+      payload: error.response.data.message,
+    });
+  }
+};
+
+export const removeGroupChat = async (dispatch, chatData) => {
+  try {
+    dispatch({ type: REMOVE_GROUP_START });
+
+    const { data } = await axios.put("/chats/groupremove", chatData);
+
+    dispatch({
+      type: REMOVE_GROUP_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: REMOVE_GROUP_FAILED,
       payload: error.response.data.message,
     });
   }

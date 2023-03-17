@@ -16,57 +16,66 @@ import {
   IconButton,
   Spinner,
 } from "@chakra-ui/react";
-import axios from "axios";
+
 import { useState, useContext, useEffect } from "react";
 import { UserContext } from "../../context/userContext/UserContextProvider";
 import { ChatContext } from "../../context/chatContext/chatContextProvider";
-import { renameGroupChat, reset } from "../../context/chatContext/chatAction";
+import {
+  renameGroupChat,
+  reset,
+  addGroupChat,
+  removeGroupChat,
+} from "../../context/chatContext/chatAction";
+import { searchChat } from "../../context/userContext/userAction";
 import UserBadgeItem from "../userAvatar/UserBadgeItem";
 import UserListItem from "../userAvatar/UserListItem";
 
-const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
+const UpdateGroupChatModal = ({ fetchMessages }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupChatName, setGroupChatName] = useState("");
-  const [search, setSearch] = useState("");
-  const [searchResult, setSearchResult] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [renameloading, setRenameLoading] = useState(false);
+
   const toast = useToast();
 
-  const { selectedChat, setSelectedChat, renameGroup, renameGroupDispatch } =
-    useContext(ChatContext);
-  const { user: userData } = useContext(UserContext);
+  const {
+    selectedChat,
+    setSelectedChat,
+    renameGroup,
+    renameGroupDispatch,
+    fetchAgain,
+    setFetchAgain,
+    addGroup,
+    addGroupDispatch,
+    removeGroup,
+    removeGroupDispatch,
+  } = useContext(ChatContext);
+  const { user: userData, usersDispatch, users } = useContext(UserContext);
   const { user } = userData;
+  const {
+    error: searchError,
+    loading: searchLoading,
+    users: searcheduser,
+  } = users;
   const { loading: renameLoading, isRenamed, group, error } = renameGroup;
+  const { loading: addLoading, isAdded, group: addedGroup } = addGroup;
+  const {
+    loading: removeLoading,
+    isRemoved,
+    group: removedGroup,
+  } = removeGroup;
 
-  const handleSearch = async (query) => {
-    setSearch(query);
+  const handleSearch = (query) => {
     if (!query) {
+      toast({
+        description: "Enter something to search",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "top-left",
+      });
       return;
     }
 
-    try {
-      setLoading(true);
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      const { data } = await axios.get(`/api/user?search=${search}`, config);
-      console.log(data);
-      setLoading(false);
-      setSearchResult(data);
-    } catch (error) {
-      toast({
-        title: "Error Occured!",
-        description: "Failed to Load the Search Results",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom-left",
-      });
-      setLoading(false);
-    }
+    searchChat(usersDispatch, query);
   };
 
   const handleRename = async () => {
@@ -80,71 +89,8 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       })
     );
 
-    //     try {
-    //       //   setRenameLoading(true);
-    //       //   const config = {
-    //       //     headers: {
-    //       //       Authorization: `Bearer ${user.token}`,
-    //       //     },
-    //       //   };
-    //       //   const { data } = await axios.put(
-    //       //     `/api/chat/rename`,
-    //       //     {
-    //       //       chatId: selectedChat._id,
-    //       //       chatName: groupChatName,
-    //       //     },
-    //       //     config
-    //       //   );
-
-    //       console.log(group._id);
-    //       // setSelectedChat("");
-    //       setSelectedChat(group);
-    //       setFetchAgain(!fetchAgain);
-    //       setRenameLoading(false);
-    //     } catch (error) {
-    //       toast({
-    //         title: "Error Occured!",
-    //         description: error.response.data.message,
-    //         status: "error",
-    //         duration: 5000,
-    //         isClosable: true,
-    //         position: "bottom",
-    //       });
-    //       setRenameLoading(false);
-    //     }
     setGroupChatName("");
   };
-
-  useEffect(() => {
-    if (isRenamed) {
-      toast({
-        title: "Success!",
-        description: "Group name is chnaged",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom",
-      });
-
-      // setSelectedChat("");
-      setSelectedChat(group);
-      //   setFetchAgain(!fetchAgain);
-      setRenameLoading(false);
-      reset(renameGroupDispatch);
-    }
-    if (error) {
-      toast({
-        title: "Error Occured!",
-        description: error,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom",
-      });
-      setRenameLoading(false);
-      reset(renameGroupDispatch);
-    }
-  }, [error, isRenamed]);
 
   const handleAddUser = async (user1) => {
     if (selectedChat.users.find((u) => u._id === user1._id)) {
@@ -169,36 +115,14 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       return;
     }
 
-    try {
-      setLoading(true);
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      const { data } = await axios.put(
-        `/api/chat/groupadd`,
-        {
-          chatId: selectedChat._id,
-          userId: user1._id,
-        },
-        config
-      );
+    addGroupChat(
+      addGroupDispatch,
+      JSON.stringify({
+        chatId: selectedChat._id,
+        userId: user1._id,
+      })
+    );
 
-      setSelectedChat(data);
-      setFetchAgain(!fetchAgain);
-      setLoading(false);
-    } catch (error) {
-      toast({
-        title: "Error Occured!",
-        description: error.response.data.message,
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom",
-      });
-      setLoading(false);
-    }
     setGroupChatName("");
   };
 
@@ -213,40 +137,101 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       });
       return;
     }
+    removeGroupChat(
+      removeGroupDispatch,
+      JSON.stringify({
+        chatId: selectedChat._id,
+        userId: user1._id,
+      })
+    );
 
-    try {
-      setLoading(true);
-      const config = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      const { data } = await axios.put(
-        `/api/chat/groupremove`,
-        {
-          chatId: selectedChat._id,
-          userId: user1._id,
-        },
-        config
-      );
+    user1._id === user._id ? setSelectedChat() : setSelectedChat(removedGroup);
+    setFetchAgain(!fetchAgain);
+    setGroupChatName("");
+  };
 
-      user1._id === user._id ? setSelectedChat() : setSelectedChat(data);
+  useEffect(() => {
+    if (isRenamed) {
+      toast({
+        title: "Success!",
+        description: "Group name is changed",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+
+      setSelectedChat(group);
       setFetchAgain(!fetchAgain);
-      fetchMessages();
-      setLoading(false);
-    } catch (error) {
+
+      reset(renameGroupDispatch);
+    }
+    if (isAdded) {
+      toast({
+        title: "Success!",
+        description: "user is added into this group",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+
+      setSelectedChat(addedGroup);
+      setFetchAgain(!fetchAgain);
+
+      reset(addGroupDispatch);
+    }
+    if (error) {
       toast({
         title: "Error Occured!",
-        description: error.response.data.message,
+        description: error,
         status: "error",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
-      setLoading(false);
+
+      reset(renameGroupDispatch);
     }
-    setGroupChatName("");
-  };
+    if (searchError) {
+      toast({
+        title: "Error Occured!",
+        description: searchError,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+
+      reset(usersDispatch);
+    }
+    return () => {
+      if (isRemoved) {
+        toast({
+          title: "Success!",
+          description: "user is removed from group",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+          position: "bottom",
+        });
+
+        // setSelectedChat(removedGroup);
+
+        reset(removeGroupDispatch);
+      }
+    };
+  }, [
+    error,
+    isRenamed,
+    searchError,
+    isAdded,
+    isRemoved,
+    renameGroupDispatch,
+    usersDispatch,
+    addGroupDispatch,
+    removeGroupDispatch,
+  ]);
 
   return (
     <>
@@ -287,7 +272,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
                 variant="solid"
                 colorScheme="teal"
                 ml={1}
-                isLoading={renameloading}
+                isLoading={renameLoading}
                 onClick={handleRename}
               >
                 Update
@@ -301,10 +286,10 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
               />
             </FormControl>
 
-            {loading ? (
+            {searchLoading ? (
               <Spinner size="lg" />
             ) : (
-              searchResult?.map((user) => (
+              searcheduser?.map((user) => (
                 <UserListItem
                   key={user._id}
                   user={user}

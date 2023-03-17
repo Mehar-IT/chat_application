@@ -39,7 +39,12 @@ export default function SideDrawer() {
     usersDispatch,
     dispatch,
   } = useContext(UserContext);
-  const { chats, dispatch: chatDispatch } = useContext(ChatContext);
+  const {
+    chats,
+    dispatch: chatDispatch,
+    fetchAgain,
+    setFetchAgain,
+  } = useContext(ChatContext);
   const { loading: chatLoading, chat, error: chatError } = chats;
   const { error, loading, isAuthenticated, user } = userData;
   const {
@@ -68,6 +73,7 @@ export default function SideDrawer() {
 
   const accessChat = (id) => {
     createUserChat(chatDispatch, id);
+    setFetchAgain(!fetchAgain);
     onClose();
   };
 

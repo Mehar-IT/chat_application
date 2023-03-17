@@ -4,6 +4,7 @@ import SideDrawer from "../components/miscellaneous/SideDrawer";
 import MyChats from "../components/MyChats";
 import ChatBox from "../components/ChatBox";
 import { Box } from "@chakra-ui/layout";
+import { useState } from "react";
 
 export default function ChatPage() {
   const { user: users, dispatch } = useContext(UserContext);

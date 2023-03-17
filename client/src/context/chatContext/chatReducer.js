@@ -11,6 +11,12 @@ import {
   RENAME_GROUP_START,
   RENAME_GROUP_SUCCESS,
   RENAME_GROUP_FAILED,
+  ADD_GROUP_START,
+  ADD_GROUP_SUCCESS,
+  ADD_GROUP_FAILED,
+  REMOVE_GROUP_START,
+  REMOVE_GROUP_SUCCESS,
+  REMOVE_GROUP_FAILED,
   RESET,
 } from "./chatConstant";
 
@@ -128,6 +134,70 @@ export const renameGroupReducer = (state, action) => {
         loading: false,
         group: null,
         isRenamed: false,
+        error: null,
+      };
+    default:
+      return state;
+  }
+};
+
+export const addGroupReducer = (state, action) => {
+  switch (action.type) {
+    case ADD_GROUP_START:
+      return {
+        loading: true,
+      };
+    case ADD_GROUP_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isAdded: true,
+        group: action.payload,
+      };
+    case ADD_GROUP_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    case RESET:
+      return {
+        ...state,
+        loading: false,
+        group: null,
+        isAdded: false,
+        error: null,
+      };
+    default:
+      return state;
+  }
+};
+
+export const removeGroupReducer = (state, action) => {
+  switch (action.type) {
+    case REMOVE_GROUP_START:
+      return {
+        loading: true,
+      };
+    case REMOVE_GROUP_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isRemoved: true,
+        group: action.payload,
+      };
+    case REMOVE_GROUP_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    case RESET:
+      return {
+        ...state,
+        loading: false,
+        group: null,
+        isRemoved: false,
         error: null,
       };
     default:

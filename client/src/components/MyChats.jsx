@@ -19,6 +19,7 @@ const MyChats = () => {
     getChatDispatch,
     selectedChat,
     setSelectedChat,
+    fetchAgain,
   } = useContext(ChatContext);
   const { user } = useContext(UserContext);
   const { user: userData } = user;
@@ -31,7 +32,9 @@ const MyChats = () => {
 
   useEffect(() => {
     getUserChat(getChatDispatch);
-  }, [singleChat, getChatDispatch]);
+    // }, [singleChat, getChatDispatch]);
+  }, [fetchAgain]);
+
   useEffect(() => {
     if (error) {
       toast({
