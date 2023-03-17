@@ -9,6 +9,9 @@ import {
   CREATE_GROUP_START,
   CREATE_GROUP_SUCCESS,
   CREATE_GROUP_FAILED,
+  RENAME_GROUP_START,
+  RENAME_GROUP_SUCCESS,
+  RENAME_GROUP_FAILED,
   RESET,
 } from "./chatConstant";
 
@@ -47,6 +50,7 @@ export const getUserChat = async (dispatch) => {
     });
   }
 };
+
 export const createGroupChat = async (dispatch, chatData) => {
   try {
     dispatch({ type: CREATE_GROUP_START });
@@ -60,6 +64,24 @@ export const createGroupChat = async (dispatch, chatData) => {
   } catch (error) {
     dispatch({
       type: CREATE_GROUP_FAILED,
+      payload: error.response.data.message,
+    });
+  }
+};
+
+export const renameGroupChat = async (dispatch, chatData) => {
+  try {
+    dispatch({ type: RENAME_GROUP_START });
+
+    const { data } = await axios.put("/chats/rename", chatData);
+
+    dispatch({
+      type: RENAME_GROUP_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: RENAME_GROUP_FAILED,
       payload: error.response.data.message,
     });
   }

@@ -8,6 +8,9 @@ import {
   CREATE_GROUP_START,
   CREATE_GROUP_SUCCESS,
   CREATE_GROUP_FAILED,
+  RENAME_GROUP_START,
+  RENAME_GROUP_SUCCESS,
+  RENAME_GROUP_FAILED,
   RESET,
 } from "./chatConstant";
 
@@ -93,6 +96,38 @@ export const crateGroupReducer = (state, action) => {
         ...state,
         loading: false,
         groupCreated: false,
+        error: null,
+      };
+    default:
+      return state;
+  }
+};
+
+export const renameGroupReducer = (state, action) => {
+  switch (action.type) {
+    case RENAME_GROUP_START:
+      return {
+        loading: true,
+      };
+    case RENAME_GROUP_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isRenamed: true,
+        group: action.payload,
+      };
+    case RENAME_GROUP_FAILED:
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
+    case RESET:
+      return {
+        ...state,
+        loading: false,
+        group: null,
+        isRenamed: false,
         error: null,
       };
     default:

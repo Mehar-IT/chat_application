@@ -12,13 +12,20 @@ import { UserContext } from "../context/userContext/UserContextProvider";
 import { getUserChat } from "../context/chatContext/chatAction";
 
 const MyChats = () => {
-  const { chat, chats, dispatch, getChatDispatch } = useContext(ChatContext);
+  const {
+    chat,
+    chats,
+    dispatch,
+    getChatDispatch,
+    selectedChat,
+    setSelectedChat,
+  } = useContext(ChatContext);
   const { user } = useContext(UserContext);
   const { user: userData } = user;
   const { loading, error, chats: chatData } = chats;
   const { chat: singleChat } = chat;
 
-  const [selectedChat, setSelectedChat] = useState();
+  // const [selectedChat, setSelectedChat] = useState();
 
   const toast = useToast();
 
