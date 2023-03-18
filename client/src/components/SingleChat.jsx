@@ -10,7 +10,7 @@ import ProfileModal from "./miscellaneous/ProfileModel";
 import ScrollableChat from "./ScrollableChat";
 import Lottie from "react-lottie";
 import animationData from "../animation/typing.json";
-// import io from "socket.io-client";
+import io from "socket.io-client";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { useContext } from "react";
 import { ChatContext } from "../context/chatContext/chatContextProvider";
@@ -21,14 +21,14 @@ import {
   reset,
   getAllMessage,
 } from "../context/messageContext/messageAction";
-// const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
-// var socket, selectedChatCompare;
+const ENDPOINT = "http://localhost:3000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+var socket, selectedChatCompare;
 
 const SingleChat = () => {
   const [messages, setMessages] = useState([]);
 
   const [newMessage, setNewMessage] = useState("");
-  // const [socketConnected, setSocketConnected] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [istyping, setIsTyping] = useState(false);
   const toast = useToast();
@@ -59,10 +59,8 @@ const SingleChat = () => {
     // setMessages()
 
     //   setLoading(true);
-
+    socket.emit("join chat", selectedChat._id);
     //   setMessages(data);
-
-    //   socket.emit("join chat", selectedChat._id);
   };
 
   const sendMessage = async (event) => {
@@ -77,20 +75,19 @@ const SingleChat = () => {
       setNewMessage("");
       // setMessages([...message,])
 
-      //     socket.emit("new message", data);
       //     setMessages([...messages, data]);
     }
   };
 
-  // useEffect(() => {
-  //   socket = io(ENDPOINT);
-  //   socket.emit("setup", user);
-  //   socket.on("connected", () => setSocketConnected(true));
-  //   socket.on("typing", () => setIsTyping(true));
-  //   socket.on("stop typing", () => setIsTyping(false));
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", user);
+    socket.on("connected", () => setSocketConnected(true));
+    // socket.on("typing", () => setIsTyping(true));
+    // socket.on("stop typing", () => setIsTyping(false));
 
-  //   // eslint-disable-next-line
-  // }, []);
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     if (allMessageError) {
@@ -120,7 +117,7 @@ const SingleChat = () => {
   useEffect(() => {
     fetchMessages();
 
-    // selectedChatCompare = selectedChat;
+    selectedChatCompare = selectedChat;
     // eslint-disable-next-line
   }, [selectedChat]);
 
@@ -129,23 +126,24 @@ const SingleChat = () => {
   }, [allMessageData]);
   useEffect(() => {
     messageData && setMessages([...messages, messageData]);
+    messageData && socket.emit("new message", messageData);
   }, [messageData]);
 
-  // useEffect(() => {
-  //   socket.on("message recieved", (newMessageRecieved) => {
-  //     if (
-  //       !selectedChatCompare || // if chat is not selected or doesn't match current chat
-  //       selectedChatCompare._id !== newMessageRecieved.chat._id
-  //     ) {
-  //       if (!notification.includes(newMessageRecieved)) {
-  //         setNotification([newMessageRecieved, ...notification]);
-  //         // setFetchAgain(!fetchAgain);
-  //       }
-  //     } else {
-  //       setMessages([...messages, newMessageRecieved]);
-  //     }
-  //   });
-  // });
+  useEffect(() => {
+    socket.on("message recieved", (newMessageRecieved) => {
+      if (
+        !selectedChatCompare || // if chat is not selected or doesn't match current chat
+        selectedChatCompare._id !== newMessageRecieved.chat._id
+      ) {
+        // if (!notification.includes(newMessageRecieved)) {
+        //   setNotification([newMessageRecieved, ...notification]);
+        //   // setFetchAgain(!fetchAgain);
+        // }
+      } else {
+        setMessages([...messages, newMessageRecieved]);
+      }
+    });
+  });
 
   const typingHandler = (e) => {
     setNewMessage(e.target.value);

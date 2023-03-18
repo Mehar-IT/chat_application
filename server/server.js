@@ -35,8 +35,41 @@ app.use("/api/messages", messageRoute);
 app.use(notFoundError);
 app.use(errotHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`App is listinig on ${PORT}`);
+});
+
+const io = require("socket.io")(server, {
+  pingTimeout: 60000,
+  cors: {
+    origin: "http://127.0.0.1:5173",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("connected to socket.io");
+  socket.on("setup", (userData) => {
+    socket.join(userData._id);
+    console.log(userData._id);
+    socket.emit("connected");
+  });
+
+  socket.on("join chat", (room) => {
+    socket.join(room);
+    console.log("user joind room " + room);
+  });
+
+  socket.on("new message", (newMessageRecieved) => {
+    var chat = newMessageRecieved.chat;
+
+    if (!chat.users) return console.log("chat.users not defined");
+
+    chat.users.forEach((user) => {
+      if (user._id == newMessageRecieved.sender._id) return;
+
+      socket.in(user._id).emit("message recieved", newMessageRecieved);
+    });
+  });
 });
 
 process.on("unhandledRejection", (err) => {
