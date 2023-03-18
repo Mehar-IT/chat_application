@@ -163,7 +163,7 @@ const UpdateGroupChatModal = ({ fetchMessages }) => {
 
       setSelectedChat(group);
       setFetchAgain(!fetchAgain);
-
+      fetchMessages();
       reset(renameGroupDispatch);
     }
     if (isAdded) {
