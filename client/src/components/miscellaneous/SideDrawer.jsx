@@ -31,6 +31,8 @@ import { ChatContext } from "../../context/chatContext/chatContextProvider";
 import ProfileModel from "./ProfileModel";
 import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserAvatar/UserListItem";
+import { getSender } from "../../config/ChatLogics";
+import NotificationBadge, { Effect } from "react-notification-badge";
 
 export default function SideDrawer() {
   const {
@@ -44,6 +46,9 @@ export default function SideDrawer() {
     dispatch: chatDispatch,
     fetchAgain,
     setFetchAgain,
+    notification,
+    setSelectedChat,
+    setNotification,
   } = useContext(ChatContext);
   const { loading: chatLoading, chat, error: chatError } = chats;
   const { error, loading, isAuthenticated, user } = userData;
@@ -132,9 +137,29 @@ export default function SideDrawer() {
         <div>
           <Menu>
             <MenuButton p={1}>
+              <NotificationBadge
+                count={notification.length}
+                effect={Effect.SCALE}
+              />
               <BellIcon fontSize={"2xl"} />
             </MenuButton>
-            {/* <MenuList></MenuList> */}
+
+            <MenuList pl={4}>
+              {!notification.length && "No New Messages"}
+              {notification.map((notif) => (
+                <MenuItem
+                  key={notif._id}
+                  onClick={() => {
+                    setSelectedChat(notif.chat);
+                    setNotification(notification.filter((n) => n !== notif));
+                  }}
+                >
+                  {notif.chat.isGroupChat
+                    ? `new message in ${notif.chat.chatName}`
+                    : `new message from ${getSender(user, notif.chat.users)}`}
+                </MenuItem>
+              ))}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>

@@ -19,6 +19,7 @@ export default function ChatContextProvider({ children }) {
   const [removeGroup, removeGroupDispatch] = useReducer(removeGroupReducer, {});
   const [selectedChat, setSelectedChat] = useState(null);
   const [fetchAgain, setFetchAgain] = useState(false);
+  const [notification, setNotification] = useState([]);
 
   return (
     <ChatContext.Provider
@@ -39,6 +40,8 @@ export default function ChatContextProvider({ children }) {
         removeGroupDispatch,
         fetchAgain,
         setFetchAgain,
+        notification,
+        setNotification,
       }}
     >
       {children}

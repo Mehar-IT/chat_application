@@ -26,7 +26,6 @@ var socket, selectedChatCompare;
 
 const SingleChat = () => {
   const [messages, setMessages] = useState([]);
-
   const [newMessage, setNewMessage] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -43,7 +42,14 @@ const SingleChat = () => {
   };
   const { message, messageDispatch, allMessages, messagesDispatch } =
     useContext(MessageContext);
-  const { selectedChat, setSelectedChat } = useContext(ChatContext);
+  const {
+    selectedChat,
+    setSelectedChat,
+    notification,
+    setNotification,
+    setFetchAgain,
+    fetchAgain,
+  } = useContext(ChatContext);
   const { user: userData } = useContext(UserContext);
   const { user } = userData;
   const { message: messageData, error: messageError } = message;
@@ -65,7 +71,7 @@ const SingleChat = () => {
 
   const sendMessage = async (event) => {
     if (event.key === "Enter" && newMessage) {
-      // socket.emit("stop typing", selectedChat._id);
+      socket.emit("stop typing", selectedChat._id);
       const data = {
         chatId: selectedChat._id,
         content: newMessage,
@@ -73,9 +79,6 @@ const SingleChat = () => {
 
       createMessage(messageDispatch, data);
       setNewMessage("");
-      // setMessages([...message,])
-
-      //     setMessages([...messages, data]);
     }
   };
 
@@ -116,7 +119,6 @@ const SingleChat = () => {
 
   useEffect(() => {
     fetchMessages();
-
     selectedChatCompare = selectedChat;
     // eslint-disable-next-line
   }, [selectedChat]);
@@ -135,10 +137,10 @@ const SingleChat = () => {
         !selectedChatCompare || // if chat is not selected or doesn't match current chat
         selectedChatCompare._id !== newMessageRecieved.chat._id
       ) {
-        // if (!notification.includes(newMessageRecieved)) {
-        //   setNotification([newMessageRecieved, ...notification]);
-        //   // setFetchAgain(!fetchAgain);
-        // }
+        if (!notification.includes(newMessageRecieved)) {
+          setNotification([newMessageRecieved, ...notification]);
+          setFetchAgain(!fetchAgain);
+        }
       } else {
         setMessages([...messages, newMessageRecieved]);
       }
