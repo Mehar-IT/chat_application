@@ -22,7 +22,8 @@ import {
   getAllMessage,
 } from "../context/messageContext/messageAction";
 // const ENDPOINT = "http://localhost:3000";
-const ENDPOINT = "https://chat-application-two-gamma.vercel.app/";
+// const ENDPOINT = "https://chat-application-two-gamma.vercel.app/";
+const ENDPOINT = "https://hamza-chat-mern.herokuapp.com/";
 var socket, selectedChatCompare;
 
 const SingleChat = () => {

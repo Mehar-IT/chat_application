@@ -14,7 +14,7 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-dotenv.config();
+dotenv.config({path:"server/local.env"});
 connectDB();
 const app = express();
 const PORT = process.env.PORT || 3000;
