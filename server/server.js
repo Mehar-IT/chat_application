@@ -6,6 +6,7 @@ const chatRoute = require("./routes/chatRoute");
 const messageRoute = require("./routes/messageRoute");
 const { notFoundError, errotHandler } = require("./middleware/error");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 process.on("uncaughtException", (err) => {
   console.log(`Error : ${err.message}`);
@@ -21,16 +22,23 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/", (req, res, next) => {
-  res.status(200).json({
-    success: true,
-    message: "app is running",
-  });
-});
-
 app.use("/api/user", userRoute);
 app.use("/api/chats", chatRoute);
 app.use("/api/messages", messageRoute);
+
+if (process.env.PRODUCTION === "PRODUCTION") {
+  app.use(express.static(path.join(__dirname, "../client/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../client/dist/index.html"));
+  });
+} else {
+  app.get("/", (req, res, next) => {
+    res.status(200).json({
+      success: true,
+      message: "app is running",
+    });
+  });
+}
 
 app.use(notFoundError);
 app.use(errotHandler);
