@@ -21,7 +21,8 @@ import {
   reset,
   getAllMessage,
 } from "../context/messageContext/messageAction";
-const ENDPOINT = "http://localhost:3000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+// const ENDPOINT = "http://localhost:3000";
+const ENDPOINT = "https://chat-application-two-gamma.vercel.app/";
 var socket, selectedChatCompare;
 
 const SingleChat = () => {
