@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const userRoute = require("./routes/userRoute");
 const chatRoute = require("./routes/chatRoute");
 const messageRoute = require("./routes/messageRoute");
+const notificationRoute = require("./routes/notificationRoute");
 const { notFoundError, errotHandler } = require("./middleware/error");
 const cookieParser = require("cookie-parser");
 const path = require("path");
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use("/api/user", userRoute);
 app.use("/api/chats", chatRoute);
 app.use("/api/messages", messageRoute);
+app.use("/api/notifications", notificationRoute);
 
 if (process.env.PRODUCTION === "PRODUCTION") {
   app.use(express.static(path.join(__dirname, "../client/dist")));
