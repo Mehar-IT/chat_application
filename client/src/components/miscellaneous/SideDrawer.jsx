@@ -33,6 +33,11 @@ import ChatLoading from "../ChatLoading";
 import UserListItem from "../UserAvatar/UserListItem";
 import { getSender } from "../../config/ChatLogics";
 import NotificationBadge, { Effect } from "react-notification-badge";
+import { NotificationContext } from "../../context/notificationContext/notificationContext";
+import {
+  getNotification,
+  deleteNotificationAction,
+} from "../../context/notificationContext/notificationAction";
 
 export default function SideDrawer() {
   const {
@@ -42,6 +47,14 @@ export default function SideDrawer() {
     dispatch,
   } = useContext(UserContext);
   const {
+    allNotifications,
+    allNotificationReducer,
+    deleteNotification,
+    deleteNotifyReducer,
+  } = useContext(NotificationContext);
+  const { notification: notifications } = allNotifications;
+  const { isDeleted } = deleteNotification;
+  const {
     chats,
     dispatch: chatDispatch,
     fetchAgain,
@@ -50,8 +63,9 @@ export default function SideDrawer() {
     setSelectedChat,
     setNotification,
   } = useContext(ChatContext);
-  const { loading: chatLoading, chat, error: chatError } = chats;
-  const { error, loading, isAuthenticated, user } = userData;
+  const { loading: chatLoading, error: chatError } = chats;
+  const { error, user } = userData;
+  const [notifLength, setNotifLength] = useState(0);
   const {
     users: searchResult,
     error: searchError,
@@ -81,6 +95,34 @@ export default function SideDrawer() {
     setFetchAgain(!fetchAgain);
     onClose();
   };
+
+  useEffect(() => {
+    getNotification(allNotificationReducer);
+  }, [fetchAgain]);
+
+  useEffect(() => {
+    if (notifications) {
+      setNotifLength(notifications.length);
+      const filteredArray = notifications.filter((item, index) => {
+        const firstIndex = notifications.findIndex(
+          (elem) => elem.notification.chat._id === item.notification.chat._id
+        );
+        return index === firstIndex;
+      });
+
+      const result = filteredArray.map((item) => [
+        item,
+        notifications.filter(
+          (x) => x.notification.chat._id === item.notification.chat._id
+        ).length,
+      ]);
+      setNotification(result);
+    }
+  }, [notifications]);
+
+  useEffect(() => {
+    getNotification(allNotificationReducer);
+  }, [isDeleted]);
 
   useEffect(() => {
     if (error) {
@@ -137,28 +179,64 @@ export default function SideDrawer() {
         <div>
           <Menu>
             <MenuButton p={1}>
-              <NotificationBadge
-                count={notification.length}
-                effect={Effect.SCALE}
-              />
+              <NotificationBadge count={notifLength} effect={Effect.SCALE} />
               <BellIcon fontSize={"2xl"} />
             </MenuButton>
 
             <MenuList pl={4}>
               {!notification.length && "No New Messages"}
-              {notification.map((notif) => (
-                <MenuItem
-                  key={notif._id}
-                  onClick={() => {
-                    setSelectedChat(notif.chat);
-                    setNotification(notification.filter((n) => n !== notif));
-                  }}
-                >
-                  {notif.chat.isGroupChat
-                    ? `new message in ${notif.chat.chatName}`
-                    : `new message from ${getSender(user, notif.chat.users)}`}
-                </MenuItem>
-              ))}
+              {notification &&
+                // notification[0]?.notification &&
+                notification.map((notif, index) => {
+                  const msg = notif[0];
+                  const count = notif[1];
+
+                  return (
+                    <MenuItem
+                      key={msg.notification._id + index}
+                      onClick={() => {
+                        deleteNotificationAction(
+                          deleteNotifyReducer,
+                          // notif._id
+                          msg.notification.chat._id
+                        );
+
+                        setSelectedChat(msg.notification.chat);
+                        // setNotification(
+                        //   notification.filter(
+                        //     (n) => n.notification !== notif.notification
+                        //   )
+                        // );
+                      }}
+                    >
+                      {msg.notification.chat.isGroupChat ? (
+                        <>
+                          <p style={{ color: "red", fontWeight: "bold" }}>
+                            {count}
+                          </p>
+                          <p
+                            style={{ color: "blueviolet", fontWeight: "bold" }}
+                          >
+                            {" "}
+                            &nbsp;message in {msg.notification.chat.chatName}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p style={{ color: "red", fontWeight: "bold" }}>
+                            {count}
+                          </p>
+                          &nbsp;message from&nbsp;
+                          <p
+                            style={{ color: "blueviolet", fontWeight: "bold" }}
+                          >
+                            {getSender(user, msg.notification.chat.users)}
+                          </p>
+                        </>
+                      )}
+                    </MenuItem>
+                  );
+                })}
             </MenuList>
           </Menu>
           <Menu>

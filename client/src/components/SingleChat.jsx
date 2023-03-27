@@ -16,11 +16,13 @@ import { useContext } from "react";
 import { ChatContext } from "../context/chatContext/chatContextProvider";
 import { UserContext } from "../context/userContext/UserContextProvider";
 import { MessageContext } from "../context/messageContext/MessageContextProvider";
+import { NotificationContext } from "../context/notificationContext/notificationContext";
 import {
   createMessage,
   reset,
   getAllMessage,
 } from "../context/messageContext/messageAction";
+import { createNotification } from "../context/notificationContext/notificationAction";
 // const ENDPOINT = "http://localhost:3000";
 // const ENDPOINT = "https://chat-application-two-gamma.vercel.app/";
 const ENDPOINT = "https://hamza-chat-mern.herokuapp.com/";
@@ -48,11 +50,11 @@ const SingleChat = () => {
     selectedChat,
     setSelectedChat,
     notification,
-    setNotification,
     setFetchAgain,
     fetchAgain,
   } = useContext(ChatContext);
   const { user: userData } = useContext(UserContext);
+  const { dispatch: notificationDispatcher } = useContext(NotificationContext);
   const { user } = userData;
   const { message: messageData, error: messageError } = message;
   const {
@@ -64,11 +66,7 @@ const SingleChat = () => {
   const fetchMessages = async () => {
     if (!selectedChat) return;
     getAllMessage(messagesDispatch, selectedChat._id);
-    // setMessages()
-
-    //   setLoading(true);
     socket.emit("join chat", selectedChat._id);
-    //   setMessages(data);
   };
 
   const sendMessage = async (event) => {
@@ -122,7 +120,6 @@ const SingleChat = () => {
   useEffect(() => {
     fetchMessages();
     selectedChatCompare = selectedChat;
-    // eslint-disable-next-line
   }, [selectedChat]);
 
   useEffect(() => {
@@ -131,22 +128,42 @@ const SingleChat = () => {
   useEffect(() => {
     messageData && setMessages([...messages, messageData]);
     messageData && socket.emit("new message", messageData);
+    messageData && createNotification(notificationDispatcher, messageData._id);
   }, [messageData]);
 
   useEffect(() => {
-    socket.on("message recieved", (newMessageRecieved) => {
-      if (
-        !selectedChatCompare || // if chat is not selected or doesn't match current chat
-        selectedChatCompare._id !== newMessageRecieved.chat._id
-      ) {
-        if (!notification.includes(newMessageRecieved)) {
-          setNotification([newMessageRecieved, ...notification]);
-          setFetchAgain(!fetchAgain);
+    socket.on(
+      "message recieved",
+      (newMessageRecieved) => {
+        if (
+          !selectedChatCompare || // if chat is not selected or doesn't match current chat
+          selectedChatCompare._id !== newMessageRecieved.chat._id
+        ) {
+          const result = Object.entries(
+            [newMessageRecieved].reduce((acc, cur) => {
+              acc[cur._id] = acc[cur._id] || [
+                {
+                  notification: cur,
+                },
+                0,
+              ];
+
+              acc[cur._id][1] = 1 + acc[cur._id][1];
+              return acc;
+            }, {})
+          ).map(([notification, count]) => {
+            return [{ notification }, count][1];
+          });
+
+          if (!notification.includes(result)) {
+            setFetchAgain(!fetchAgain);
+          }
+        } else {
+          setMessages([...messages, newMessageRecieved]);
         }
-      } else {
-        setMessages([...messages, newMessageRecieved]);
-      }
-    });
+      },
+      [socket]
+    );
   });
 
   const typingHandler = (e) => {

@@ -43,8 +43,6 @@ export const getAllMessage = async (dispatch, chatId) => {
       payload: data,
     });
   } catch (error) {
-    console.log(error.response.data.message);
-
     dispatch({
       type: GET_MESSAGE_FAILED,
       payload: error.response.data.message,
